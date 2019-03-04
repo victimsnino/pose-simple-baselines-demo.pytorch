@@ -10,8 +10,6 @@ import cv2
 import numpy as np
 
 #model
-
-NUM_LAYERS = 50
 DECONV_WITH_BIAS = False
 NUM_DECONV_LAYERS = 3
 NUM_DECONV_FILTERS = [256, 256, 256]
@@ -262,8 +260,8 @@ resnet_spec = {18: (BasicBlock, [2, 2, 2, 2]),
                101: (Bottleneck, [3, 4, 23, 3]),
                152: (Bottleneck, [3, 8, 36, 3])}
                
-def get_pose_net(is_train, **kwargs):
-    num_layers = 50
+def get_pose_net(layers, is_train, **kwargs):
+    num_layers = layers
     
     block_class, layers = resnet_spec[num_layers]
     model = PoseResNet(block_class, layers, **kwargs)
@@ -316,6 +314,14 @@ def parse_args():
     parser.add_argument('--save-transform-image',
                         help='Save temp image after transforms (True/False)',
                         action='store_true')
+    parser.add_argument('--model-layers',
+                        help='Count of layers in model',
+                        required=True,
+                        type=str)
+    parser.add_argument('--model-input-size',
+                        help='Size of your model input (One dimension)',
+                        required=True,
+                        type=str)
     args = parser.parse_args()
 
     return args
@@ -323,18 +329,21 @@ def parse_args():
 def main():
     args = parse_args()
     
+    transform_image = False
+    
     if args.model_file:
         model_file = args.model_file
     if args.image_file:
-        image_file = args.image_file 
-        
+        image_file = args.image_file   
     if args.save_transform_image:
         transform_image = args.save_transform_image
-    else:
-        transform_image = False
-
+    if args.model_layers:
+        num_layers = np.int(args.model_layers)
+    if args.model_input_size:
+        IMAGE_SIZE = (np.int(args.model_input_size), np.int(args.model_input_size))
+   
     model = eval('get_pose_net')(
-        is_train=False
+        num_layers, is_train=False
     )
     
     if model_file:
@@ -374,8 +383,7 @@ def main():
             x, y = int(mat[0]), int(mat[1])
             cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
                   np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
-            
-            
+               
         cv2.imwrite('result.jpg', image)
     
     print('Success')
