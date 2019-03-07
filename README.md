@@ -23,9 +23,11 @@ Description of args:
 * save-transform-image: You can set it for saving temp image after resizing
 
 ## Important! ##
-Person for estimation must be at the center of image, else it can work wrong!
-Example:
-Bad position:
-![Image of BadPosition](http://immage.biz/image/SP53)
-Good position:
-![Image of BadPosition](http://immage.biz/image/SP50)
+Person for estimation must be at the center of image, else it can work wrong!<br>
+Example:<br>
+Bad positions:<br>
+![Image of BadPosition](http://immage.biz/images/2019/03/07/SP53.jpg)
+![Image of BadPosition](http://immage.biz/images/2019/03/07/SP5U.jpg)
+<br> Good position:
+![Image of GoodPosition](http://immage.biz/images/2019/03/07/SP50.jpg)
+![Image of GoodPosition](http://immage.biz/images/2019/03/07/SP5v.jpg)
