@@ -28,6 +28,6 @@ Example:<br>
 Bad positions:<br>
 ![Image of BadPosition](http://immage.biz/images/2019/03/07/SP53.jpg)
 ![Image of BadPosition](http://immage.biz/images/2019/03/07/SP5U.jpg)
-<br> Good position:
+<br> Good position: <br>
 ![Image of GoodPosition](http://immage.biz/images/2019/03/07/SP50.jpg)
 ![Image of GoodPosition](http://immage.biz/images/2019/03/07/SP5v.jpg)
