@@ -363,7 +363,10 @@ def main():
 
     # vis transformed image
     if transform_image == True:
-        cv2.imwrite('transformed.jpg', input)
+        copyInput = input.copy()
+        cv2.rectangle(copyInput, (np.int(IMAGE_SIZE[0]/2 + IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 + IMAGE_SIZE[1]/4)), 
+                                 (np.int(IMAGE_SIZE[0]/2 - IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 - IMAGE_SIZE[1]/4)), (255,0,0), 2)
+        cv2.imwrite('transformed.jpg', copyInput)
 
     transform = transforms.Compose([
         transforms.ToTensor(),
