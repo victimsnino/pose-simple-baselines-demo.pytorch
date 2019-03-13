@@ -322,6 +322,9 @@ def parse_args():
                         help='Size of your model input (One dimension)',
                         required=True,
                         type=str)
+    parser.add_argument('--use-webcam',
+                        help='Use webcam for predication',
+                        action='store_true')
     args = parser.parse_args()
 
     return args
@@ -330,6 +333,7 @@ def main():
     args = parse_args()
     
     transform_image = False
+    use_webcam = False
     
     if args.model_file:
         model_file = args.model_file
@@ -341,6 +345,8 @@ def main():
         num_layers = np.int(args.model_layers)
     if args.model_input_size:
         IMAGE_SIZE = (np.int(args.model_input_size), np.int(args.model_input_size))
+    if args.use_webcam:
+        use_webcam = args.use_webcam
    
     model = eval('get_pose_net')(
         num_layers, is_train=False
@@ -352,44 +358,90 @@ def main():
     else:
         print('Error')
         return
+        
+    if use_webcam == False:
+        ## Load an image
+        data_numpy = cv2.imread(image_file, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+        print(data_numpy.shape)
+        if data_numpy is None:
+            raise ValueError('Fail to read {}'.format(image_file))
 
-    ## Load an image
-    data_numpy = cv2.imread(image_file, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
-    print(data_numpy.shape)
-    if data_numpy is None:
-        raise ValueError('Fail to read {}'.format(image_file))
+        input = cv2.resize(data_numpy, (IMAGE_SIZE[0], IMAGE_SIZE[1]))
 
-    input = cv2.resize(data_numpy, (IMAGE_SIZE[0], IMAGE_SIZE[1]))
+        # vis transformed image
+        if transform_image == True:
+            copyInput = input.copy()
+            cv2.rectangle(copyInput, (np.int(IMAGE_SIZE[0]/2 + IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 + IMAGE_SIZE[1]/4)), 
+                                     (np.int(IMAGE_SIZE[0]/2 - IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 - IMAGE_SIZE[1]/4)), (255,0,0), 2)
+            cv2.imwrite('transformed.jpg', copyInput)
 
-    # vis transformed image
-    if transform_image == True:
-        copyInput = input.copy()
-        cv2.rectangle(copyInput, (np.int(IMAGE_SIZE[0]/2 + IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 + IMAGE_SIZE[1]/4)), 
-                                 (np.int(IMAGE_SIZE[0]/2 - IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 - IMAGE_SIZE[1]/4)), (255,0,0), 2)
-        cv2.imwrite('transformed.jpg', copyInput)
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                std=[0.229, 0.224, 0.225]),
+            ])
+        input = transform(input).unsqueeze(0)
+        
+        # switch to evaluate mode
+        model.eval()
+        with torch.no_grad():
+            # compute output heatmap
+            output = model(input)
+            coords, maxvals = get_max_preds(output.clone().cpu().numpy())
+            image = data_numpy.copy()
+            for mat in coords[0]:
+                x, y = int(mat[0]), int(mat[1])
+                cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
+                      np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
+                   
+            cv2.imwrite('result.jpg', image)
+        
+        print('Success')
+    else:
+        cap = cv2.VideoCapture(0)
+        xres = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        yres = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        while(True):
+            ret, frame = cap.read()
+            if not ret: break
+                
+            data_numpy = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            
+            input = cv2.resize(data_numpy, (IMAGE_SIZE[0], IMAGE_SIZE[1]))
 
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225]),
-        ])
-    input = transform(input).unsqueeze(0)
-    
-    # switch to evaluate mode
-    model.eval()
-    with torch.no_grad():
-        # compute output heatmap
-        output = model(input)
-        coords, maxvals = get_max_preds(output.clone().cpu().numpy())
-        image = data_numpy.copy()
-        for mat in coords[0]:
-            x, y = int(mat[0]), int(mat[1])
-            cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
-                  np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
-               
-        cv2.imwrite('result.jpg', image)
-    
-    print('Success')
+            # vis transformed image
+            if transform_image == True:
+                copyInput = input.copy()
+                cv2.rectangle(copyInput, (np.int(IMAGE_SIZE[0]/2 + IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 + IMAGE_SIZE[1]/4)), 
+                                         (np.int(IMAGE_SIZE[0]/2 - IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 - IMAGE_SIZE[1]/4)), (255,0,0), 2)
+                cv2.imwrite('transformed.jpg', copyInput)
+
+            transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                    std=[0.229, 0.224, 0.225]),
+                ])
+            input = transform(input).unsqueeze(0)
+            
+            # switch to evaluate mode
+            model.eval()
+            with torch.no_grad():
+                # compute output heatmap
+                output = model(input)
+                coords, maxvals = get_max_preds(output.clone().cpu().numpy())
+                image = data_numpy.copy()
+                for mat in coords[0]:
+                    x, y = int(mat[0]), int(mat[1])
+                    cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
+                          np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
+                       
+                cv2.imshow('result', image)
+            
+            cv2.waitKey(1)
+            #if cv2.waitKey(1) & 0xFF == ord('q'): break
+
+        cv2.release()
+        cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()
