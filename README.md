@@ -31,3 +31,8 @@ Bad positions:<br>
 <br> Good position: <br>
 ![Image of GoodPosition](http://immage.biz/images/2019/03/07/SP50.jpg)
 ![Image of GoodPosition](http://immage.biz/images/2019/03/07/SP5v.jpg)
+## Note: ##
+If you don't know, at the center of the image your person or not, you can use option --save-transform-image. After this, you get an image "transformed.jpg", where you can see a blue box. Your person must be into this box fully or most of the body  <br>
+Examples: <br>
+![Image of Good](http://immage.biz/images/2019/03/13/SPgD.jpg) ![Image of Good](http://immage.biz/images/2019/03/13/SPgF.jpg)
+![Image of Bad](http://immage.biz/images/2019/03/13/SPgd.jpg) ![Image of Bad](http://immage.biz/images/2019/03/13/SPCH.jpg)
