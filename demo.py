@@ -19,6 +19,8 @@ NUM_JOINTS = 16
 BN_MOMENTUM = 0.1
 IMAGE_SIZE = [256, 256]
 
+image = np.empty(())
+
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
@@ -203,55 +205,6 @@ class PoseResNet(nn.Module):
 
         return x
 
-    def init_weights(self, pretrained=''):
-        if os.path.isfile(pretrained):
-            logger.info('=> init deconv weights from normal distribution')
-            for name, m in self.deconv_layers.named_modules():
-                if isinstance(m, nn.ConvTranspose2d):
-                    logger.info('=> init {}.weight as normal(0, 0.001)'.format(name))
-                    logger.info('=> init {}.bias as 0'.format(name))
-                    nn.init.normal_(m.weight, std=0.001)
-                    if self.deconv_with_bias:
-                        nn.init.constant_(m.bias, 0)
-                elif isinstance(m, nn.BatchNorm2d):
-                    logger.info('=> init {}.weight as 1'.format(name))
-                    logger.info('=> init {}.bias as 0'.format(name))
-                    nn.init.constant_(m.weight, 1)
-                    nn.init.constant_(m.bias, 0)
-            logger.info('=> init final conv weights from normal distribution')
-            for m in self.final_layer.modules():
-                if isinstance(m, nn.Conv2d):
-                    # nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                    logger.info('=> init {}.weight as normal(0, 0.001)'.format(name))
-                    logger.info('=> init {}.bias as 0'.format(name))
-                    nn.init.normal_(m.weight, std=0.001)
-                    nn.init.constant_(m.bias, 0)
-
-            # pretrained_state_dict = torch.load(pretrained)
-            logger.info('=> loading pretrained model {}'.format(pretrained))
-            # self.load_state_dict(pretrained_state_dict, strict=False)
-            checkpoint = torch.load(pretrained)
-            if isinstance(checkpoint, OrderedDict):
-                state_dict = checkpoint
-            elif isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
-                state_dict_old = checkpoint['state_dict']
-                state_dict = OrderedDict()
-                # delete 'module.' because it is saved from DataParallel module
-                for key in state_dict_old.keys():
-                    if key.startswith('module.'):
-                        # state_dict[key[7:]] = state_dict[key]
-                        # state_dict.pop(key)
-                        state_dict[key[7:]] = state_dict_old[key]
-                    else:
-                        state_dict[key] = state_dict_old[key]
-            else:
-                raise RuntimeError(
-                    'No state_dict found in checkpoint file {}'.format(pretrained))
-            self.load_state_dict(state_dict, strict=False)
-        else:
-            logger.error('=> imagenet pretrained model dose not exist')
-            logger.error('=> please download it first')
-            raise ValueError('imagenet pretrained model does not exist')
 
             
 resnet_spec = {18: (BasicBlock, [2, 2, 2, 2]),
@@ -309,7 +262,7 @@ def parse_args():
                         type=str)
     parser.add_argument('--image-file',
                         help='image for predication',
-                        required=True,
+                        # required=True,
                         type=str)
     parser.add_argument('--save-transform-image',
                         help='Save temp image after transforms (True/False)',
@@ -325,15 +278,48 @@ def parse_args():
     parser.add_argument('--use-webcam',
                         help='Use webcam for predication',
                         action='store_true')
+    parser.add_argument('--use-crop-mode',
+                        help='Use crop mode for cropping person, that are you want to predict',
+                        action='store_true')
+    parser.add_argument('--gpus',
+                        help='GPUs',
+                        type=str)
     args = parser.parse_args()
 
     return args
 
+refPt = []
+cropping = False
+tempPosition = ()
+
+def click_and_crop(event, x, y, flags, param):
+	# grab references to the global variables
+    global refPt, cropping, tempPosition
+ 
+	# if the left mouse button was clicked, record the starting
+	# (x, y) coordinates and indicate that cropping is being
+	# performed
+    if event == cv2.EVENT_LBUTTONDOWN:
+        refPt = [(x, y)]
+        cropping = True
+ 
+	# check to see if the left mouse button was released
+    elif event == cv2.EVENT_LBUTTONUP:
+		# record the ending (x, y) coordinates and indicate that
+		# the cropping operation is finished
+        refPt.append((x, y))
+        cropping = False
+    else:
+        tempPosition = (x, y)
+        
 def main():
+    global refPt, tempPosition
     args = parse_args()
     
     transform_image = False
     use_webcam = False
+    gpus = ''
+    use_crop = False
     
     if args.model_file:
         model_file = args.model_file
@@ -347,6 +333,10 @@ def main():
         IMAGE_SIZE = (np.int(args.model_input_size), np.int(args.model_input_size))
     if args.use_webcam:
         use_webcam = args.use_webcam
+    if args.gpus:
+        gpus = args.gpus
+    if args.use_crop_mode:
+        use_crop = args.use_crop_mode
    
     model = eval('get_pose_net')(
         num_layers, is_train=False
@@ -355,6 +345,9 @@ def main():
     if model_file:
         print('=> loading model from {}'.format(model_file))
         model.load_state_dict(torch.load(model_file))
+        if len(gpus) != 0:
+            GPUS = [int(i) for i in gpus.split(',')]
+            model = torch.nn.DataParallel(model, device_ids=GPUS).cuda()
     else:
         print('Error')
         return
@@ -362,10 +355,32 @@ def main():
     if use_webcam == False:
         ## Load an image
         data_numpy = cv2.imread(image_file, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
-        print(data_numpy.shape)
         if data_numpy is None:
-            raise ValueError('Fail to read {}'.format(image_file))
-
+            raise ValueError('Fail to read image {}'.format(image_file))
+        print(data_numpy.shape)
+        
+        if use_crop == True:
+            cv2.namedWindow("image")
+            cv2.setMouseCallback("image", click_and_crop)
+            
+            while True:
+                key = cv2.waitKey(1) & 0xFF
+             
+                if len(refPt) == 2:
+                    temp = data_numpy.copy()
+                    cv2.rectangle(temp, refPt[0], refPt[1], (0, 255, 0), 2)
+                    cv2.imshow("image", temp)
+                    cv2.waitKey(1) & 0xFF
+                    break
+                elif len(refPt) == 1:
+                    temp = data_numpy.copy()
+                    cv2.rectangle(temp, refPt[0], tempPosition, (0, 255, 0), 2)
+                    cv2.imshow("image", temp)
+                else:
+                    cv2.imshow("image", data_numpy)
+                    
+            data_numpy = data_numpy[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
+            
         input = cv2.resize(data_numpy, (IMAGE_SIZE[0], IMAGE_SIZE[1]))
 
         # vis transformed image
@@ -395,18 +410,16 @@ def main():
                       np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
                    
             cv2.imwrite('result.jpg', image)
+            cv2.imshow('result.jpg', image)
+            cv2.waitKey(2000) & 0xFF
         
         print('Success')
     else:
         cap = cv2.VideoCapture(0)
-        xres = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        yres = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         while(True):
-            ret, frame = cap.read()
+            ret, data_numpy = cap.read()
             if not ret: break
-                
-            data_numpy = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
+                            
             input = cv2.resize(data_numpy, (IMAGE_SIZE[0], IMAGE_SIZE[1]))
 
             # vis transformed image
@@ -437,7 +450,7 @@ def main():
                        
                 cv2.imshow('result', image)
             
-            cv2.waitKey(1)
+            cv2.waitKey(10)
             #if cv2.waitKey(1) & 0xFF == ord('q'): break
 
         cv2.release()
