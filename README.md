@@ -15,13 +15,14 @@ This demo created for quick-testing original models for mpii dataset (other data
 1. Download required models from original repository from step 8 of Installation
 2. Prepare image, that you want to use for testing
 3. run script:<br>
-<code> python demo.py --model-file \<path to model\> --image-file \<path to image\> --model-layers \<count of layers\> --model-input-size \<size of input layer\> [--save-transform-image] [--use-webcam] </code>
+<code> python demo.py --model-file \<path to model\> --image-file \<path to image\> --model-layers \<count of layers\> --model-input-size \<size of input layer\> [--save-transform-image] [--use-webcam] [--use-crop-mode] [--gpus] </code>
 
 Description of args:
 * model-layers: You should set this parameter relates to your model. For example, "pose_resnet_152_384x384.pth.tar" model has 152 layers 
 * model-input-size: You should set this parameter relates to your model. For example, "pose_resnet_152_384x384.pth.tar" model has size 384
 * save-transform-image: You can set it for saving temp image after resizing
 * use-webcam : Use webcam for getting images for predict
+* use-crop-mode : Use crop mode for cropping person, that are you want (after adding this parameter, you get a new window with your photo, where you should highlight a required zone)
 
 ## Important! ##
 Person for estimation must be at the center of image, else it can work wrong!<br>
