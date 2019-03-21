@@ -20,7 +20,7 @@ This demo created for quick-testing original models for mpii dataset (other data
 Description of args:
 * model-layers: You should set this parameter relates to your model. For example, "pose_resnet_152_384x384.pth.tar" model has 152 layers 
 * model-input-size: You should set this parameter relates to your model. For example, "pose_resnet_152_384x384.pth.tar" model has size 384
-* save-transform-image: You can set it for saving temp image after resizing
+* save-transform-image: You can set it for saving temp image after resizing and drawing bounding box (it works for webcam too)
 * use-webcam : Use webcam for getting images for predict
 * use-crop-mode : Use crop mode for cropping person, that are you want (after adding this parameter, you get a new window with your photo, where you should highlight a required zone)
 
