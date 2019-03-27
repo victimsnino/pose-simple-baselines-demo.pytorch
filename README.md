@@ -23,7 +23,7 @@ Description of args:
 * save-transform-image: You can set it for saving temp image after resizing and drawing bounding box (it works for webcam too)
 * use-webcam : Use webcam for getting images for predict
 * use-crop-mode : Use crop mode for cropping person, that are you want (after adding this parameter, you get a new window with your photo, where you should highlight a required zone)
-* min-confidence-threshold : Minumal confidence threshold, that will be drawing on image. Default: 0.5
+* min-confidence-threshold : Minumal confidence threshold of joints, that will be drawing on image. Default: 0.5
 
 ## Important! ##
 Person for estimation must be at the center of image, else it can work wrong!<br>
