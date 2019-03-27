@@ -8,6 +8,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
+from openvino.inference_engine import IENetwork, IEPlugin
 
 #model
 DECONV_WITH_BIAS = False
@@ -257,7 +258,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
     
     parser.add_argument('--model-file',
-                        help='model state file',
+                        help='Path to an .xml file with a trained mode',
                         required=True,
                         type=str)
     parser.add_argument('--image-file',
@@ -271,19 +272,15 @@ def parse_args():
                         help='Count of layers in model',
                         required=True,
                         type=str)
-    parser.add_argument('--model-input-size',
-                        help='Size of your model input (One dimension)',
-                        required=True,
-                        type=str)
     parser.add_argument('--use-webcam',
                         help='Use webcam for predication',
                         action='store_true')
     parser.add_argument('--use-crop-mode',
                         help='Use crop mode for cropping person, that are you want to predict',
                         action='store_true')
-    parser.add_argument('--gpus',
-                        help='GPUs',
-                        type=str)
+    parser.add_argument('--gpu',
+                        help='Use GPU',
+                        action='store_true')
     parser.add_argument('--min-confidence-threshold',
                         help='Minimum confidence threshold for drawing. Default: 0.5',
                         type=str)
@@ -321,43 +318,62 @@ def main():
     
     transform_image = False
     use_webcam = False
-    gpus = ''
+    gpu = False
     use_crop = False
     min_confidence_threshold = 0.5
     
     if args.model_file:
-        model_file = args.model_file
+        model_xml = args.model_file
+        model_bin = os.path.splitext(model_xml)[0] + ".bin"
     if args.image_file:
         image_file = args.image_file   
     if args.save_transform_image:
         transform_image = args.save_transform_image
     if args.model_layers:
         num_layers = np.int(args.model_layers)
-    if args.model_input_size:
-        IMAGE_SIZE = (np.int(args.model_input_size), np.int(args.model_input_size))
     if args.use_webcam:
         use_webcam = args.use_webcam
-    if args.gpus:
-        gpus = args.gpus
+    if args.gpu:
+        gpu = args.gpu
     if args.use_crop_mode:
         use_crop = args.use_crop_mode
     if args.min_confidence_threshold:
         min_confidence_threshold = np.float(args.min_confidence_threshold)
         
-    model = eval('get_pose_net')(
-        num_layers, is_train=False
-    )
-    
-    if model_file:
-        print('=> loading model from {}'.format(model_file))
-        model.load_state_dict(torch.load(model_file))
-        if len(gpus) != 0:
-            GPUS = [int(i) for i in gpus.split(',')]
-            model = torch.nn.DataParallel(model, device_ids=GPUS).cuda()
+
+    if model_xml:
+        print("Loading network files:\n\t{}\n\t{}".format(model_xml, model_bin))
+        net = IENetwork(model=model_xml, weights=model_bin)
+        net.batch_size = 1
     else:
         print('Error')
         return
-        
+    if gpu == True:
+        plugin = IEPlugin('GPU')
+    else:
+        plugin = IEPlugin('CPU')
+    
+    # if plugin.device == "CPU":
+        # supported_layers = plugin.get_supported_layers(net)
+        # not_supported_layers = [l for l in net.layers.keys() if l not in supported_layers]
+        # if len(not_supported_layers) != 0:
+            # log.error("Following layers are not supported by the plugin for specified device {}:\n {}".
+                      # format(plugin.device, ', '.join(not_supported_layers)))
+            # log.error("Please try to specify cpu extensions library path in sample's command line parameters using -l "
+                      # "or --cpu_extension command line argument")
+            # sys.exit(1)
+        # assert len(net.inputs.keys()) == 1, "Sample supports only single input topologies"
+        # assert len(net.outputs) == 1, "Sample supports only single output topologies"
+    
+    input_blob = next(iter(net.inputs))
+    print(net.inputs['input_1'].shape)
+    print("Loading model to the plugin")
+    exec_net = plugin.load(network=net)
+    print("Loaded")
+    IMAGE_SIZE[0] = net.inputs['input_1'].shape[2]
+    IMAGE_SIZE[1] = net.inputs['input_1'].shape[3]
+    del net
+    
     if use_webcam == False:
         ## Load an image
         data_numpy = cv2.imread(image_file, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
@@ -404,25 +420,25 @@ def main():
         input = transform(input).unsqueeze(0)
         
         # switch to evaluate mode
-        model.eval()
-        with torch.no_grad():
-            # compute output heatmap
-            output = model(input)
-            coords, maxvals = get_max_preds(output.clone().cpu().numpy())
-            print(maxvals)
-            cv2.waitKey(1000) & 0xFF
-            image = data_numpy.copy()
-            for i in range(coords[0].shape[0]):
-                mat = coords[0,i]
-                x, y = int(mat[0]), int(mat[1])
-                if maxvals[0, i] >= min_confidence_threshold:
-                    cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
-                          np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
-                   
-            cv2.imwrite('result.jpg', image)
-            cv2.imshow('result.jpg', image)
-            cv2.waitKey(2000) & 0xFF
-        
+
+
+        # compute output heatmap
+        output = exec_net.infer(inputs={input_blob: input})['output1']
+        coords, maxvals = get_max_preds(output)
+        print(maxvals)
+        cv2.waitKey(1000) & 0xFF
+        image = data_numpy.copy()
+        for i in range(coords[0].shape[0]):
+            mat = coords[0,i]
+            x, y = int(mat[0]), int(mat[1])
+            if maxvals[0, i] >= min_confidence_threshold:
+                cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
+                      np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
+               
+        cv2.imwrite('result.jpg', image)
+        cv2.imshow('result.jpg', image)
+        cv2.waitKey(2000) & 0xFF
+    
         print('Success')
     else:
         cap = cv2.VideoCapture(0)
@@ -446,29 +462,26 @@ def main():
                 ])
             input = transform(input).unsqueeze(0)
             
-            # switch to evaluate mode
-            model.eval()
-            with torch.no_grad():
-                # compute output heatmap
-                output = model(input)
-                coords, maxvals = get_max_preds(output.clone().cpu().numpy())
-                image = data_numpy.copy()
-                badPoints = 0
-                for i in range(coords[0].shape[0]):
-                    mat = coords[0,i]
-                    x, y = int(mat[0]), int(mat[1])
-                    if maxvals[0, i] >= min_confidence_threshold:
-                        cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
-                              np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
-                    if maxvals[0, i] <= 0.4:
-                        badPoints += 1
-                if badPoints >= coords[0].shape[0]/3:
-                    cv2.rectangle(image, (np.int(data_numpy.shape[1]/2 + data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 + data_numpy.shape[0]/4)), 
-                                         (np.int(data_numpy.shape[1]/2 - data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 - data_numpy.shape[0]/4)), (255,0,0), 2)
-                cv2.imshow('result', image)
-            
+            # compute output heatmap
+            output = exec_net.infer(inputs={input_blob: input})['output1']
+            coords, maxvals = get_max_preds(output)
+            image = data_numpy.copy()
+            badPoints = 0
+            for i in range(coords[0].shape[0]):
+                mat = coords[0,i]
+                x, y = int(mat[0]), int(mat[1])
+                if maxvals[0, i] >= min_confidence_threshold:
+                    cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
+                          np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
+                if maxvals[0, i] <= 0.4:
+                    badPoints += 1
+            if badPoints >= coords[0].shape[0]/3:
+                cv2.rectangle(image, (np.int(data_numpy.shape[1]/2 + data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 + data_numpy.shape[0]/4)), 
+                                     (np.int(data_numpy.shape[1]/2 - data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 - data_numpy.shape[0]/4)), (255,0,0), 2)
+            cv2.imshow('result', image)
+        
             cv2.waitKey(10)
-            #if cv2.waitKey(1) & 0xFF == ord('q'): break
+        #if cv2.waitKey(1) & 0xFF == ord('q'): break
 
         cv2.release()
         cv2.destroyAllWindows()
