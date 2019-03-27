@@ -15,7 +15,7 @@ This demo created for quick-testing original models for mpii dataset (other data
 1. Download required models from original repository from step 8 of Installation
 2. Prepare image, that you want to use for testing
 3. run script:<br>
-<code> python demo.py --model-file \<path to model\> --image-file \<path to image\> --model-layers \<count of layers\> --model-input-size \<size of input layer\> [--save-transform-image] [--use-webcam] [--use-crop-mode] [--gpus <id> ]  [--min-confidence-threshold <coef> ] </code>
+<code> python demo.py --model-file \<path to model\> --image-file \<path to image\> --model-layers \<count of layers\> --model-input-size \<size of input layer\> [--save-transform-image] [--use-webcam] [--use-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
 
 Description of args:
 * model-layers: You should set this parameter relates to your model. For example, "pose_resnet_152_384x384.pth.tar" model has 152 layers 
