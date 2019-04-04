@@ -434,6 +434,9 @@ def main():
         
         print('Success')
     else:
+        sample = cv2.imread('sample.png', -1)
+        alpha_s = sample[:, :, 3] / 255.0
+        alpha_l = 1.0 - alpha_s
         cap = cv2.VideoCapture(0)
         while(True):
             ret, data_numpy = cap.read()
@@ -474,6 +477,9 @@ def main():
                 if badPoints >= coords[0].shape[0]/3:
                     cv2.rectangle(image, (np.int(data_numpy.shape[1]/2 + data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 + data_numpy.shape[0]/4)), 
                                          (np.int(data_numpy.shape[1]/2 - data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 - data_numpy.shape[0]/4)), (255,0,0), 2)
+                    for c in range(0, 3):
+                        image[10:10+sample.shape[0], 10:10+sample.shape[1], c] = (alpha_s * sample[:, :, c] +
+                                  alpha_l * image[10:10+sample.shape[0], 10:10+sample.shape[1], c])
                 cv2.imshow('result', image)
             
             cv2.waitKey(10)
