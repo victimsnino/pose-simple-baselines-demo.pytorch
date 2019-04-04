@@ -207,20 +207,7 @@ class PoseResNet(nn.Module):
         return x
 
 
-            
-resnet_spec = {18: (BasicBlock, [2, 2, 2, 2]),
-               34: (BasicBlock, [3, 4, 6, 3]),
-               50: (Bottleneck, [3, 4, 6, 3]),
-               101: (Bottleneck, [3, 4, 23, 3]),
-               152: (Bottleneck, [3, 8, 36, 3])}
-               
-def get_pose_net(layers, is_train, **kwargs):
-    num_layers = layers
-    
-    block_class, layers = resnet_spec[num_layers]
-    model = PoseResNet(block_class, layers, **kwargs)
-
-    return model
+                    
 
 # predication
 def get_max_preds(batch_heatmaps):
@@ -268,10 +255,6 @@ def parse_args():
     parser.add_argument('--save-transform-image',
                         help='Save temp image after transforms (True/False)',
                         action='store_true')
-    parser.add_argument('--model-layers',
-                        help='Count of layers in model',
-                        required=True,
-                        type=str)
     parser.add_argument('--use-webcam',
                         help='Use webcam for predication',
                         action='store_true')
@@ -329,8 +312,6 @@ def main():
         image_file = args.image_file   
     if args.save_transform_image:
         transform_image = args.save_transform_image
-    if args.model_layers:
-        num_layers = np.int(args.model_layers)
     if args.use_webcam:
         use_webcam = args.use_webcam
     if args.gpu:

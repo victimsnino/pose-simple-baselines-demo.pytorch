@@ -9,6 +9,11 @@ import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 
+
+import yaml
+from easydict import EasyDict as edict
+
+
 #model
 DECONV_WITH_BIAS = False
 NUM_DECONV_LAYERS = 3
@@ -256,8 +261,8 @@ def get_max_preds(batch_heatmaps):
 def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
     
-    parser.add_argument('--model-file',
-                        help='model state file',
+    parser.add_argument('--cfg',
+                        help='Path to cfg *.yaml',
                         required=True,
                         type=str)
     parser.add_argument('--image-file',
@@ -267,14 +272,6 @@ def parse_args():
     parser.add_argument('--save-transform-image',
                         help='Save temp image after transforms (True/False)',
                         action='store_true')
-    parser.add_argument('--model-layers',
-                        help='Count of layers in model',
-                        required=True,
-                        type=str)
-    parser.add_argument('--model-input-size',
-                        help='Size of your model input (One dimension)',
-                        required=True,
-                        type=str)
     parser.add_argument('--use-webcam',
                         help='Use webcam for predication',
                         action='store_true')
@@ -314,10 +311,27 @@ def click_and_crop(event, x, y, flags, param):
         cropping = False
     else:
         tempPosition = (x, y)
-        
+   
+def loadConfig(config_file):
+    numLayers = 0 
+    size = ()
+    model_file = ''
+    with open(config_file) as f:
+        exp_config = edict(yaml.load(f))
+        for k, v in exp_config.items():
+            if k == 'PRETRAINED':
+                model_file = v
+            if k == 'NUM_LAYERS':
+                numLayers= v
+            if k == 'IMAGE_SIZE':
+                size = (v[0], v[1])
+    return model_file, numLayers, size
+    
 def main():
     global refPt, tempPosition
+    
     args = parse_args()
+    model_file, num_layers, IMAGE_SIZE = loadConfig(args.cfg)
     
     transform_image = False
     use_webcam = False
@@ -325,16 +339,11 @@ def main():
     use_crop = False
     min_confidence_threshold = 0.5
     
-    if args.model_file:
-        model_file = args.model_file
+
     if args.image_file:
         image_file = args.image_file   
     if args.save_transform_image:
         transform_image = args.save_transform_image
-    if args.model_layers:
-        num_layers = np.int(args.model_layers)
-    if args.model_input_size:
-        IMAGE_SIZE = (np.int(args.model_input_size), np.int(args.model_input_size))
     if args.use_webcam:
         use_webcam = args.use_webcam
     if args.gpus:
