@@ -15,11 +15,11 @@ This demo created for quick-testing original models for mpii dataset (other data
 1. Download required models from original repository from step 8 of Installation
 2. Prepare image, that you want to use for testing
 3. run script:<br>
-<code> python demo.py --model-file \<path to model\> --image-file \<path to image\> --model-layers \<count of layers\> --model-input-size \<size of input layer\> [--save-transform-image] [--use-webcam] [--use-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
+<code> python demo.py --cfg \<path to cfg *.yaml\> --image-file \<path to image\> [--save-transform-image] [--use-webcam] [--use-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
 
 Description of args:
-* model-layers: You should set this parameter relates to your model. For example, "pose_resnet_152_384x384.pth.tar" model has 152 layers 
-* model-input-size: You should set this parameter relates to your model. For example, "pose_resnet_152_384x384.pth.tar" model has size 384
+* cfg (only for demo.py) : You should choose config with the same name as a model, that you are want to use. This file includes different configs for these models. Your model and config must be placed in same directory
+* model-file (only for openvino-demo.py) : You should set it to your *.xml model
 * save-transform-image: You can set it for saving temp image after resizing and drawing bounding box (it works for webcam too)
 * use-webcam : Use webcam for getting images for predict
 * use-crop-mode : Use crop mode for cropping person, that are you want (after adding this parameter, you get a new window with your photo, where you should highlight a required zone)
