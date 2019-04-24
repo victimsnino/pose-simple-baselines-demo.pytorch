@@ -1,14 +1,18 @@
 import argparse
 import os
 import pprint
+import sys
 
+sys.path.append('C:\Program Files (x86)\IntelSWTools\openvino_2019.1.087\python\python3.6')
+
+from openvino.inference_engine import IENetwork, IEPlugin
 import torch
 import torchvision.transforms as transforms
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
-from openvino.inference_engine import IENetwork, IEPlugin
+
 
 #model
 DECONV_WITH_BIAS = False
