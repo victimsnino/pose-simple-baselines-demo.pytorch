@@ -1,4 +1,4 @@
-PRETRAINED: 'pose_resnet_101_384x384.pth.tar'
+PRETRAINED: 'models/pose_resnet_101_384x384.pth.tar'
 IMAGE_SIZE:
 - 384
 - 384
