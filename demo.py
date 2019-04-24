@@ -243,6 +243,7 @@ def main():
                     for c in range(0, 3):
                         image[10:10+sample.shape[0], 10:10+sample.shape[1], c] = (alpha_s * sample[:, :, c] +
                                   alpha_l * image[10:10+sample.shape[0], 10:10+sample.shape[1], c])
+                    cv2.putText(image, "locate your body as shown on images for keypoint detection", (10, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,0), lineType=cv2.LINE_AA)
                 cv2.imshow('result', image)
             
             cv2.waitKey(10)
