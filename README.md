@@ -1,8 +1,8 @@
 # Demo of Simple Baselines for Human Pose Estimation and Tracking
-![example.png](http://immage.biz/images/2019/04/26/SQ1Y.png) ![result.jpg](http://immage.biz/images/2019/04/26/SQ19.jpg) <br>
 This repository contains testing code for the paper https://arxiv.org/abs/1804.06208 .  <br>
 Original repository (https://github.com/Microsoft/human-pose-estimation.pytorch) <br>
 This repository created at Intel R&D lab 
+ <br> ![result.jpg](http://immage.biz/images/2019/04/26/SQ19.jpg) <br>
 
 # Introduction
 This demo created for quick-testing original models for mpii dataset (other datasets and models not tested) by your own images. My code draws joints, which founded by model, on your image and save it as another image. This code doesn't use any detection models, therefore searches joints by a center person of your image
@@ -34,9 +34,9 @@ For using OpenVINO script you shold convert original models into \*.onnx and the
 3. This file you shold insert, like argument for model optimizer of OpenVINO (OPENVINO_ROOT/deployment_tools/model_optimizer/mo.py). After this you get a \*.bin and \*.xml for openvino demo script
 
 # Exmple of using
-This repository includes an example image. example.png:
+This repository includes an example image. example.png: <br>
 ![example.png](http://immage.biz/images/2019/04/26/SQ1Y.png) <br>
-If we try to run our script with a key --skip-crop-mode, we get an image without or wrong keypoints and message to console *"Bad position of person! Can't find key points. Please, place it at the center of the image or use crop mode for this"*. For correct prediction, we should place the person at the center of the image or use crop-mode for selecting him, if our image is not correct. For example, we can select our person like this:
+If we try to run our script with a key --skip-crop-mode, we get an image without or wrong keypoints and message to console *"Bad position of person! Can't find key points. Please, place it at the center of the image or use crop mode for this"*. For correct prediction, we should place the person at the center of the image or use crop-mode for selecting him, if our image is not correct. For example, we can select our person like this: <br>
 ![example.png](http://immage.biz/images/2019/04/26/SQ1o.png)<br>
-And get the correct result:
+And get the correct result: <br>
 ![result.jpg](http://immage.biz/images/2019/04/26/SQ19.jpg)
