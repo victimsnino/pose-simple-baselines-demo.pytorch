@@ -130,6 +130,9 @@ def main():
         print('Error')
         return
         
+    sample = cv2.imread('sample.png', -1)
+    alpha_s = sample[:, :, 3] / 255.0
+    alpha_l = 1.0 - alpha_s
     if use_webcam == False:
         ## Load an image
         data_numpy = cv2.imread(image_file, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
@@ -154,10 +157,16 @@ def main():
                     temp = data_numpy.copy()
                     cv2.rectangle(temp, refPt[0], tempPosition, (0, 255, 0), 2)
                     cv2.putText(temp, "Select the zone of interest", (10, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), lineType=cv2.LINE_AA)
+                    for c in range(0, 3):
+                        temp[10:10+sample.shape[0], 10:10+sample.shape[1], c] = (alpha_s * sample[:, :, c] +
+                                  alpha_l * temp[10:10+sample.shape[0], 10:10+sample.shape[1], c])
                     cv2.imshow("image", temp)
                 else:
                     temp = data_numpy.copy()
                     cv2.putText(temp, "Select the zone of interest", (10, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), lineType=cv2.LINE_AA)
+                    for c in range(0, 3):
+                        temp[10:10+sample.shape[0], 10:10+sample.shape[1], c] = (alpha_s * sample[:, :, c] +
+                                  alpha_l * temp[10:10+sample.shape[0], 10:10+sample.shape[1], c])
                     cv2.imshow("image", temp)
                     
             data_numpy = data_numpy[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
@@ -197,9 +206,8 @@ def main():
                 else:
                     badPoints += 1
                           
-            if badPoints >= coords[0].shape[0]/3:
-                cv2.putText(image, "Bad position of person! Can't find keypoints.", (10, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (128,0,0), lineType=cv2.LINE_AA)
-                cv2.putText(image, "Please, place it at the center of the image or use crop mode for this", (10, 38), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (128,0,0), lineType=cv2.LINE_AA)
+            if badPoints >= coords[0].shape[0]/2:
+                print("Bad position of person! Can't find keypoints. Please, place it at the center of the image or use crop mode for this")
                 
             cv2.imwrite('result.jpg', image)
             cv2.putText(image, "Saving in result.jpg...", (10, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), lineType=cv2.LINE_AA)
@@ -208,9 +216,6 @@ def main():
         
         print('Success')
     else:
-        sample = cv2.imread('sample.png', -1)
-        alpha_s = sample[:, :, 3] / 255.0
-        alpha_l = 1.0 - alpha_s
         cap = cv2.VideoCapture(0)
         while(True):
             ret, data_numpy = cap.read()
@@ -248,7 +253,7 @@ def main():
                               np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
                     if maxvals[0, i] <= 0.4:
                         badPoints += 1
-                if badPoints >= coords[0].shape[0]/3:
+                if badPoints >= coords[0].shape[0]/2:
                     cv2.rectangle(image, (np.int(data_numpy.shape[1]/2 + data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 + data_numpy.shape[0]/4)), 
                                          (np.int(data_numpy.shape[1]/2 - data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 - data_numpy.shape[0]/4)), (255,0,0), 2)
                     for c in range(0, 3):
