@@ -1,5 +1,5 @@
 # Demo of Simple Baselines for Human Pose Estimation and Tracking
-![result.jpg](http://immage.biz/images/2019/04/26/SQ19.jpg)
+![example.png](http://immage.biz/images/2019/04/26/SQ1Y.png) ![result.jpg](http://immage.biz/images/2019/04/26/SQ19.jpg) <br>
 This repository contains testing code for the paper https://arxiv.org/abs/1804.06208 .  <br>
 Original repository (https://github.com/Microsoft/human-pose-estimation.pytorch) <br>
 This repository created at Intel R&D lab 
