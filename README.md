@@ -1,7 +1,8 @@
-# Simple Baselines for Human Pose Estimation and Tracking (sample)
+# Demo of Simple Baselines for Human Pose Estimation and Tracking
 
 This repository contains testing code for the paper https://arxiv.org/abs/1804.06208 .  <br>
-Original repository (https://github.com/Microsoft/human-pose-estimation.pytorch)
+Original repository (https://github.com/Microsoft/human-pose-estimation.pytorch) <br>
+This repository created at Intel R&D lab 
 
 # Introduction
 This demo created for quick-testing original models for mpii dataset (other datasets and models not tested) by your own images. My code draws joints, which founded by model, on your image and save it as another image. This code doesn't use any detection models, therefore searches joints by a center person of your image
@@ -18,11 +19,11 @@ This demo created for quick-testing original models for mpii dataset (other data
 <code> python demo.py --cfg \<path to cfg *.yaml\> --image-file \<path to image\> [--save-transform-image] [--use-webcam] [--use-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
 
 Description of args:
-* cfg (only for demo.py) : You should choose config with the same name as a model, that you are want to use. This file includes different configs for these models. Your model and config must be placed in same directory
+* cfg (only for demo.py) : You should choose config with the same name as a model, that you are want to use. This file includes different configs for these models.
 * model-file (only for openvino-demo.py) : You should set it to your *.xml model
 * save-transform-image: You can set it for saving temp image after resizing and drawing bounding box (it works for webcam too)
 * use-webcam : Use webcam for getting images for predict
-* use-crop-mode : Use crop mode for cropping person, that are you want (after adding this parameter, you get a new window with your photo, where you should highlight a required zone)
+* skip-crop-mode : Use crop mode for cropping person, that are you want (after adding this parameter, you get a new window with your photo, where you should highlight a required zone). By default crop mode is on. You can skip it with help this key
 * min-confidence-threshold : Minumal confidence threshold of joints, that will be drawing on image. Default: 0.5
 
 ## Important! ##
