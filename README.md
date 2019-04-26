@@ -16,7 +16,7 @@ This demo created for quick-testing original models for mpii dataset (other data
 1. Download required models from original repository from step 8 of Installation
 2. Prepare image, that you want to use for testing
 3. run script:<br>
-<code> python demo.py --cfg \<path to cfg *.yaml\> --image-file \<path to image\> [--save-transform-image] [--use-webcam] [--use-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
+<code> python demo.py --cfg \<path to cfg *.yaml\> --image-file \<path to image\> [--save-transform-image] [--use-webcam] [--skip-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
 
 Description of args:
 * cfg (only for demo.py) : You should choose config with the same name as a model, that you are want to use. This file includes different configs for these models.
