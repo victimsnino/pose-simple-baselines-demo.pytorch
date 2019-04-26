@@ -38,8 +38,8 @@ def parse_args():
     parser.add_argument('--use-webcam',
                         help='Use webcam for predication',
                         action='store_true')
-    parser.add_argument('--use-crop-mode',
-                        help='Use crop mode for cropping person, that are you want to predict',
+    parser.add_argument('--skip-crop-mode',
+                        help='Skip crop mode',
                         action='store_true')
     parser.add_argument('--gpu',
                         help='Use GPU',
@@ -82,7 +82,7 @@ def main():
     transform_image = False
     use_webcam = False
     gpu = False
-    use_crop = False
+    use_crop = True
     min_confidence_threshold = 0.5
     
     if args.model_file:
@@ -96,8 +96,8 @@ def main():
         use_webcam = args.use_webcam
     if args.gpu:
         gpu = args.gpu
-    if args.use_crop_mode:
-        use_crop = args.use_crop_mode
+    if args.skip_crop_mode:
+        use_crop = False
     if args.min_confidence_threshold:
         min_confidence_threshold = np.float(args.min_confidence_threshold)
         
@@ -158,9 +158,12 @@ def main():
                 elif len(refPt) == 1:
                     temp = data_numpy.copy()
                     cv2.rectangle(temp, refPt[0], tempPosition, (0, 255, 0), 2)
+                    cv2.putText(temp, "Select the zone of interest", (10, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), lineType=cv2.LINE_AA)
                     cv2.imshow("image", temp)
                 else:
-                    cv2.imshow("image", data_numpy)
+                    temp = data_numpy.copy()
+                    cv2.putText(temp, "Select the zone of interest", (10, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), lineType=cv2.LINE_AA)
+                    cv2.imshow("image", temp)
                     
             data_numpy = data_numpy[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
             
@@ -192,13 +195,20 @@ def main():
         for i in range(coords[0].shape[0]):
             mat = coords[0,i]
             x, y = int(mat[0]), int(mat[1])
+            badPoints = 0
             if maxvals[0, i] >= min_confidence_threshold:
                 cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
                       np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
-               
+            else:
+                badPoints += 1
+            if badPoints >= coords[0].shape[0]/3:
+                cv2.putText(image, "Bad position of person! Can't find keypoints.", (10, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (128,0,0), lineType=cv2.LINE_AA)
+                cv2.putText(image, "Please, place it at the center of the image or use crop mode for this", (10, 38), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (128,0,0), lineType=cv2.LINE_AA)
+
         cv2.imwrite('result.jpg', image)
-        cv2.imshow('result.jpg', image)
-        cv2.waitKey(2000) & 0xFF
+        cv2.putText(image, "Saving in result.jpg...", (10, 14), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), lineType=cv2.LINE_AA)
+        cv2.imshow('Saving in result.jpg...', image)
+        cv2.waitKey(5000) & 0xFF
     
         print('Success')
     else:
@@ -237,7 +247,7 @@ def main():
                 if maxvals[0, i] >= min_confidence_threshold:
                     cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
                           np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
-                if maxvals[0, i] <= 0.4:
+                if maxvals[0, i] <= 0.3:
                     badPoints += 1
             if badPoints >= coords[0].shape[0]/3:
                 cv2.rectangle(image, (np.int(data_numpy.shape[1]/2 + data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 + data_numpy.shape[0]/4)), 
@@ -249,8 +259,7 @@ def main():
 
             cv2.imshow('result', image)
         
-            cv2.waitKey(10)
-        #if cv2.waitKey(1) & 0xFF == ord('q'): break
+            if cv2.waitKey(5) == 27: break
 
         cv2.release()
         cv2.destroyAllWindows()
