@@ -26,17 +26,9 @@ Description of args:
 * skip-crop-mode : Use crop mode for cropping person, that are you want (after adding this parameter, you get a new window with your photo, where you should highlight a required zone). By default crop mode is on. You can skip it with help this key
 * min-confidence-threshold : Minumal confidence threshold of joints, that will be drawing on image. Default: 0.5
 
-## Important! ##
-Person for estimation must be at the center of image, else it can work wrong!<br>
-Example:<br>
-Bad positions:<br>
-![Image of BadPosition](http://immage.biz/images/2019/03/07/SP53.jpg)
-![Image of BadPosition](http://immage.biz/images/2019/03/07/SP5U.jpg)
-<br> Good position: <br>
-![Image of GoodPosition](http://immage.biz/images/2019/03/07/SP50.jpg)
-![Image of GoodPosition](http://immage.biz/images/2019/03/07/SP5v.jpg)
-## Note: ##
-If you don't know, at the center of the image your person or not, you can use option --save-transform-image. After this, you get an image "transformed.jpg", where you can see a blue box. Your person must be into this box fully or most of the body  <br>
-Examples: <br>
-![Image of Good](http://immage.biz/images/2019/03/13/SPgD.jpg) ![Image of Good](http://immage.biz/images/2019/03/13/SPgF.jpg)
-![Image of Bad](http://immage.biz/images/2019/03/13/SPgd.jpg) ![Image of Bad](http://immage.biz/images/2019/03/13/SPCH.jpg)
+# Export models for OpenVINO
+For using OpenVINO script you shold convert original models into \*.onnx and then to \*.bin and \*.xml. For this you need:
+1. Put export.py in pose_estimation folder of original repository
+2. Run is like you run train.py or valid.py
+3. In folder with model, that you put as argument in script, you can find new file \*.onnx
+3. This file you shold insert, like argument for model optimizer of OpenVINO (OPENVINO_ROOT/deployment_tools/model_optimizer/mo.py). After this you get a \*.bin and \*.xml for openvino demo script
