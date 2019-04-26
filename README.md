@@ -33,7 +33,7 @@ For using OpenVINO script you shold convert original models into \*.onnx and the
 3. In folder with model, that you put as argument in script, you can find new file \*.onnx
 3. This file you shold insert, like argument for model optimizer of OpenVINO (OPENVINO_ROOT/deployment_tools/model_optimizer/mo.py). After this you get a \*.bin and \*.xml for openvino demo script
 
-# Exmple of using
+# Example of using
 This repository includes an example image. example.png: <br>
 ![example.png](http://immage.biz/images/2019/04/26/SQ1Y.png) <br>
 If we try to run our script with a key --skip-crop-mode, we get an image without or wrong keypoints and message to console *"Bad position of person! Can't find key points. Please, place it at the center of the image or use crop mode for this"*. For correct prediction, we should place the person at the center of the image or use crop-mode for selecting him, if our image is not correct. For example, we can select our person like this: <br>
