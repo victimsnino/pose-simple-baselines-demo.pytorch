@@ -1,11 +1,11 @@
 # Demo of Simple Baselines for Human Pose Estimation and Tracking
-This repository contains testing code for the paper https://arxiv.org/abs/1804.06208 .  <br>
+This repository contains demo code for the paper [Simple Baselines for Human Pose Estimation and Tracking](https://arxiv.org/abs/1804.06208). <br>
 Original repository (https://github.com/Microsoft/human-pose-estimation.pytorch) <br>
-This repository created at Intel R&D lab 
+This repository created at Intel R&D lab at HSE, Nizhny Novgorod.
  <br> ![result.jpg](http://immage.biz/images/2019/04/26/SQ19.jpg) <br>
 
 # Introduction
-This demo created for quick-testing original models for mpii dataset (other datasets and models not tested) by your own images. My code draws joints, which founded by model, on your image and save it as another image. This code doesn't use any detection models, therefore searches joints by a center person of your image
+This code estimates keypoints of one person, which centered on the image (inside blue rectangle)
 
 # Requirements
 * Python 3.6
@@ -13,7 +13,7 @@ This demo created for quick-testing original models for mpii dataset (other data
 * (Optional) Install dependencies from original repository
 
 # Testing
-1. Download required models from original repository from step 8 of Installation
+1. Download required models from original repository from step 8 of Installation (for example [256x256 model](https://drive.google.com/open?id=1V2AaVpDSn-eS7jrFScHLJ-wvTFuQ0-Dc) 
 2. Prepare image, that you want to use for testing
 3. run script:<br>
 <code> python demo.py --cfg \<path to cfg *.yaml\> --image-file \<path to image\> [--save-transform-image] [--use-webcam] [--skip-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
