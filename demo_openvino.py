@@ -12,7 +12,7 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import cv2
 import numpy as np
-import model as m
+import model as mod
 
 #model
 IMAGE_SIZE = [256, 256]
@@ -34,9 +34,6 @@ def parse_args():
                         type=str)
     parser.add_argument('--save-transform-image',
                         help='Save temp image after transforms (True/False)',
-                        action='store_true')
-    parser.add_argument('--use-webcam',
-                        help='Use webcam for predication',
                         action='store_true')
     parser.add_argument('--skip-crop-mode',
                         help='Skip crop mode',
@@ -80,7 +77,7 @@ def main():
     args = parse_args()
     
     transform_image = False
-    use_webcam = False
+    use_webcam = True
     gpu = False
     use_crop = True
     min_confidence_threshold = 0.5
@@ -90,10 +87,9 @@ def main():
         model_bin = os.path.splitext(model_xml)[0] + ".bin"
     if args.image_file:
         image_file = args.image_file   
+        use_webcam = False
     if args.save_transform_image:
         transform_image = args.save_transform_image
-    if args.use_webcam:
-        use_webcam = args.use_webcam
     if args.gpu:
         gpu = args.gpu
     if args.skip_crop_mode:
@@ -197,7 +193,7 @@ def main():
 
         # compute output heatmap
         output = exec_net.infer(inputs={input_blob: input})['output1']
-        coords, maxvals = m.get_max_preds(output)
+        coords, maxvals = mod.get_max_preds(output)
         print(maxvals)
         cv2.waitKey(1000) & 0xFF
         image = data_numpy.copy()
@@ -243,7 +239,7 @@ def main():
             
             # compute output heatmap
             output = exec_net.infer(inputs={input_blob: input})['output1']
-            coords, maxvals = m.get_max_preds(output)
+            coords, maxvals = mod.get_max_preds(output)
             image = data_numpy.copy()
             badPoints = 0
             for i in range(coords[0].shape[0]):

@@ -13,7 +13,7 @@ import numpy as np
 import yaml
 from easydict import EasyDict as edict
 
-import model as m
+import model as mod
 
 #model
 IMAGE_SIZE = [256, 256]
@@ -34,9 +34,6 @@ def parse_args():
                         type=str)
     parser.add_argument('--save-transform-image',
                         help='Save temp image after transforms (True/False)',
-                        action='store_true')
-    parser.add_argument('--use-webcam',
-                        help='Use webcam for predication',
                         action='store_true')
     parser.add_argument('--skip-crop-mode',
                         help='Skip crop mode',
@@ -97,7 +94,7 @@ def main():
     model_file, num_layers, IMAGE_SIZE = loadConfig(args.cfg)
     
     transform_image = False
-    use_webcam = False
+    use_webcam = True
     gpus = ''
     use_crop = True
     min_confidence_threshold = 0.5
@@ -105,10 +102,9 @@ def main():
 
     if args.image_file:
         image_file = args.image_file   
+        use_webcam = False
     if args.save_transform_image:
         transform_image = args.save_transform_image
-    if args.use_webcam:
-        use_webcam = args.use_webcam
     if args.gpus:
         gpus = args.gpus
     if args.skip_crop_mode:
@@ -116,7 +112,7 @@ def main():
     if args.min_confidence_threshold:
         min_confidence_threshold = np.float(args.min_confidence_threshold)
         
-    model = eval('m.get_pose_net')(
+    model = eval('mod.get_pose_net')(
         num_layers, is_train=False
     )
     
@@ -192,7 +188,7 @@ def main():
         with torch.no_grad():
             # compute output heatmap
             output = model(input)
-            coords, maxvals = m.get_max_preds(output.clone().cpu().numpy())
+            coords, maxvals = mod.get_max_preds(output.clone().cpu().numpy())
             print(maxvals)
             cv2.waitKey(1000) & 0xFF
             image = data_numpy.copy()
@@ -242,7 +238,7 @@ def main():
             with torch.no_grad():
                 # compute output heatmap
                 output = model(input)
-                coords, maxvals = m.get_max_preds(output.clone().cpu().numpy())
+                coords, maxvals = mod.get_max_preds(output.clone().cpu().numpy())
                 image = data_numpy.copy()
                 badPoints = 0
                 for i in range(coords[0].shape[0]):
