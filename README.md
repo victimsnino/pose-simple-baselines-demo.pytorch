@@ -16,13 +16,13 @@ This code estimates keypoints of one person, which centered on the image (inside
 1. Download required models from original repository from step 8 of Installation (for example [256x256 model](https://drive.google.com/open?id=1V2AaVpDSn-eS7jrFScHLJ-wvTFuQ0-Dc) 
 2. Prepare image, that you want to use for testing
 3. run script:<br>
-<code> python demo.py --cfg \<path to cfg *.yaml\> --image-file \<path to image\> [--save-transform-image] [--use-webcam] [--skip-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
+<code> python demo.py --cfg \<path to cfg *.yaml\> --image-file \<path to image\> [--save-transform-image] [--skip-crop-mode] [--gpus \<id\> ]  [--min-confidence-threshold \<coef\> ] </code>
 
 Description of args:
 * cfg (only for demo.py) : You should choose config with the same name as a model, that you are want to use. This file includes different configs for these models.
+* image-file : Path to your image for predication. You can didn't use this argument, then will be used webcam
 * model-file (only for openvino-demo.py) : You should set it to your *.xml model
 * save-transform-image: You can set it for saving temp image after resizing and drawing bounding box (it works for webcam too)
-* use-webcam : Use webcam for getting images for predict
 * skip-crop-mode : Use crop mode for cropping person, that are you want (after adding this parameter, you get a new window with your photo, where you should highlight a required zone). By default crop mode is on. You can skip it with help this key
 * min-confidence-threshold : Minumal confidence threshold of joints, that will be drawing on image. Default: 0.5
 
