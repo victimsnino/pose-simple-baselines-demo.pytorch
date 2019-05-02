@@ -213,18 +213,20 @@ def main():
         print('Success')
     else:
         cap = cv2.VideoCapture(0)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
         while(True):
             ret, data_numpy = cap.read()
             if not ret: break
                             
-            input = cv2.resize(data_numpy, (IMAGE_SIZE[0], IMAGE_SIZE[1]))
-
-            # vis transformed image
-            if transform_image == True:
-                copyInput = input.copy()
-                cv2.rectangle(copyInput, (np.int(IMAGE_SIZE[0]/2 + IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 + IMAGE_SIZE[1]/4)), 
-                                         (np.int(IMAGE_SIZE[0]/2 - IMAGE_SIZE[0]/4), np.int(IMAGE_SIZE[1]/2 - IMAGE_SIZE[1]/4)), (255,0,0), 2)
-                cv2.imwrite('transformed.jpg', copyInput)
+            h, w, _ = data_numpy.shape
+            center = [w // 2, h // 2]
+            crop_half_side = min(h, w) // 2
+            tl = (center[0] - crop_half_side, center[1] - crop_half_side)
+            br = (center[0] + crop_half_side, center[1] + crop_half_side)
+            crop = data_numpy[tl[1]:br[1], tl[0]:br[0]].copy()
+            scale_x, scale_y = IMAGE_SIZE[0]/(crop_half_side*2), IMAGE_SIZE[1]/(crop_half_side*2)
+            input = cv2.resize(crop, dsize=IMAGE_SIZE)
 
             transform = transforms.Compose([
                 transforms.ToTensor(),
@@ -242,16 +244,15 @@ def main():
                 image = data_numpy.copy()
                 badPoints = 0
                 for i in range(coords[0].shape[0]):
+                    ratio = IMAGE_SIZE[0] / output.size()[2]
                     mat = coords[0,i]
-                    x, y = int(mat[0]), int(mat[1])
+                    x, y = int(mat[0] * ratio / scale_x + tl[0]), int(mat[1] * ratio / scale_y + tl[1])
                     if maxvals[0, i] >= min_confidence_threshold:
-                        cv2.circle(image, (np.int(x*data_numpy.shape[1]/output.shape[3]), 
-                              np.int(y*data_numpy.shape[0]/output.shape[2])), 2, (0, 0, 255), 2)
+                        cv2.circle(image, (x, y), 2, (0, 0, 255), 2)
                     if maxvals[0, i] <= 0.4:
                         badPoints += 1
                 if badPoints >= coords[0].shape[0]/2:
-                    cv2.rectangle(image, (np.int(data_numpy.shape[1]/2 + data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 + data_numpy.shape[0]/4)), 
-                                         (np.int(data_numpy.shape[1]/2 - data_numpy.shape[1]/4), np.int(data_numpy.shape[0]/2 - data_numpy.shape[0]/4)), (255,0,0), 2)
+                    cv2.rectangle(image, tl, br, (255,0,0), 2)
                     for c in range(0, 3):
                         image[10:10+sample.shape[0], 10:10+sample.shape[1], c] = (alpha_s * sample[:, :, c] +
                                   alpha_l * image[10:10+sample.shape[0], 10:10+sample.shape[1], c])
@@ -260,7 +261,6 @@ def main():
             
             if cv2.waitKey(5) == 27: break
 
-        cv2.release()
         cv2.destroyAllWindows()
 
 if __name__ == '__main__':
