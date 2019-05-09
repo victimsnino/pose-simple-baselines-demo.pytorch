@@ -28,9 +28,9 @@ Description of args:
 
 # Export models for OpenVINO
 For using OpenVINO script you shold convert original models into \*.onnx and then to \*.bin and \*.xml. For this you need:
-1. Put export.py in pose_estimation folder of original repository
-2. Run is like you run train.py or valid.py
-3. In folder with model, that you put as argument in script, you can find new file \*.onnx
+1. Put models like for using in ./models
+2. Run export.py with --cfg argument
+3. In folder with models you can find new file \*.onnx
 3. This file you shold insert, like argument for model optimizer of OpenVINO (OPENVINO_ROOT/deployment_tools/model_optimizer/mo.py). After this you get a \*.bin and \*.xml for openvino demo script
 
 # Example of using
