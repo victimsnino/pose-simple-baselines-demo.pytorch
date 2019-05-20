@@ -1,5 +1,0 @@
-PRETRAINED: 'pose_resnet_101_256x256.pth.tar'
-IMAGE_SIZE:
-- 256
-- 256
-NUM_LAYERS: 101

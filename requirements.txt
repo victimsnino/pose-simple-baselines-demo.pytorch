@@ -1,0 +1,6 @@
+matplotlib
+opencv-python
+numpy
+EasyDict
+torch
+torchvision

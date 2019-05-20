@@ -1,0 +1,16 @@
+*.obj
+*.log
+*.tlog
+*.idb
+*.pdb
+*.filters
+*.vcxproj
+*.user
+*.dot
+*.png
+*.txt
+*.jpg
+*.bin
+*.xml
+*.tar
+*.bat
