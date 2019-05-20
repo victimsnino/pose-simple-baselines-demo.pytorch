@@ -12,6 +12,11 @@ This code estimates keypoints of one person, which centered on the image (inside
 * PyTorch 0.4.1 (should also work with 1.0, but not tested)
 * (Optional) Install dependencies from original repository
 
+# Webcam Demo
+1. Download required models from original repository from step 8 of Installation (for example [256x256 model](https://drive.google.com/open?id=1V2AaVpDSn-eS7jrFScHLJ-wvTFuQ0-Dc) 
+2. run script (for this model) <br>
+<code> python demo.py --cfg pose_resnet_50_256x256.pth.tar.yaml </code>
+
 # Testing
 1. Download required models from original repository from step 8 of Installation (for example [256x256 model](https://drive.google.com/open?id=1V2AaVpDSn-eS7jrFScHLJ-wvTFuQ0-Dc) 
 2. Prepare image, that you want to use for testing
