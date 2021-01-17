@@ -2,7 +2,7 @@
 This repository contains demo code for the paper [Simple Baselines for Human Pose Estimation and Tracking](https://arxiv.org/abs/1804.06208). <br>
 Original repository (https://github.com/Microsoft/human-pose-estimation.pytorch) <br>
 This repository created at Intel R&D lab at HSE, Nizhny Novgorod.
- <br> ![result.jpg](http://immage.biz/images/2019/05/20/SQti.jpg) <br>
+ <br> ![result.jpg](http://egammi.com/images/2019/05/20/SQti.jpg) <br>
 
 # Introduction
 This code estimates keypoints of one person, which centered on the image (inside blue rectangle)
@@ -40,10 +40,10 @@ For using OpenVINO script you shold convert original models into \*.onnx and the
 
 # Example of using
 This repository includes an example image. example.png: <br>
-![example.png](http://immage.biz/images/2019/05/20/SQtu.jpg) <br>
+![example.png](http://egammi.com/images/2019/05/20/SQtu.jpg) <br>
 If we try to run our script with a key --skip-crop-mode, we get an image without or wrong keypoints and message to console *"Bad position of person! Can't find key points. Please, place it at the center of the image or use crop mode for this"*.  And get this image with bad predications: <br>
-![bad](http://immage.biz/images/2019/05/20/SQtm.jpg) <br>
+![bad](http://egammi.com/images/2019/05/20/SQtm.jpg) <br>
 For correct prediction, we should place the person at the center of the image or use crop-mode for selecting him, if our image is not correct. For example, we can select our person like this: <br>
-![example.png](http://immage.biz/images/2019/05/20/SQt4.png)<br>
+![example.png](http://egammi.com/images/2019/05/20/SQt4.png)<br>
 And get the correct result: <br>
-![result.jpg](http://immage.biz/images/2019/05/20/SQtB.jpg)
+![result.jpg](http://egammi.com/images/2019/05/20/SQtB.jpg)
